@@ -11,13 +11,25 @@ let books = [
   { id: 3, title: "Perahu Kertas", author: "Dee Lestari" }
 ];
 
+const users = require("./users/users");
+const authRoutes = require("./routes/authRoutes")(users);
+const authMiddleware = require("./middlewares/authMiddleware");
+const roleMiddleware = require("./middlewares/roleMiddleware");
 const logger = require("./middlewares/logger");
 const validateBook = require("./middlewares/validateBook");
 
-const bookRoutes = require("./routes/bookRoutes")(books, validateBook);
+const bookRoutes = require("./routes/bookRoutes")(
+  books,
+  validateBook,
+  authMiddleware,
+  roleMiddleware
+);
 
 // Middleware logging (global)
 app.use(logger);
+
+// Route login
+app.use("/auth", authRoutes);
 
 // Router
 app.use("/books", bookRoutes);

@@ -1,22 +1,22 @@
 const express = require("express");
 const router = express.Router();
 
-module.exports = (books, validateBook) => {
+module.exports = (books, validateBook, auth, authorizeRole) => {
 
   // GET semua buku
-  router.get("/", (req, res) => {
+  router.get("/", auth, (req, res) => {
     res.json(books);
   });
 
-  // GET buku by ID
-  router.get("/:id", (req, res) => {
+  // GET buku by ID --> Semua user
+  router.get("/:id", auth, (req, res) => {
     const book = books.find(b => b.id == req.params.id);
     if (!book) return res.status(404).send("Buku tidak ditemukan");
     res.json(book);
   });
 
-  // POST buku baru
-  router.post("/", validateBook, (req, res) => {
+  // POST buku baru --> Hanya admin 
+  router.post("/", auth, authorizeRole("admin"), validateBook, (req, res) => {
     const newBook = {
       id: books.length + 1,
       title: req.body.title,
@@ -27,8 +27,8 @@ module.exports = (books, validateBook) => {
     res.status(201).json(newBook);
   });
 
-  // PUT update buku
-  router.put("/:id", validateBook, (req, res) => {
+  // PUT update buku --> Hanya admin
+  router.put("/:id", auth, authorizeRole("admin"), validateBook, (req, res) => {
     const book = books.find(b => b.id == req.params.id);
     if (!book) return res.status(404).send("Buku tidak ditemukan");
 
@@ -38,8 +38,8 @@ module.exports = (books, validateBook) => {
     res.json(book);
   });
 
-  // DELETE buku
-  router.delete("/:id", (req, res) => {
+  // DELETE buku --> Hanya admin
+  router.delete("/:id", auth, authorizeRole("admin"), (req, res) => {
     books = books.filter(b => b.id != req.params.id);
     res.send("Buku dihapus");
   });
